@@ -7,6 +7,16 @@ use App\Meeting;
 
 class MeetingController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('jwt.auth', ['except' => [
+          'index',
+          'show',
+           ]]
+         );
+    }
+
+
     /**
      * Display a listing of the resource.
      *
@@ -87,17 +97,26 @@ class MeetingController extends Controller
     public function show($id)
     {
       // Menampilkan Data meeting beserta seluruh user yang ada di dalam nya
-      $meeting = Meeting::with('users')->where('id', $id)->firstOrFail();
+      $meeting = Meeting::with('users')->where('id', $id)->get();
       $meeting->view_meeting = [
         'href' => 'api/v1/meeting',
         'method' => 'GET'
       ];
 
-      $response =  [
+     if(($meeting )->count() > 0)  {
+
+        $response =  [
         'msg' => 'Meeting information',
         'meeting' => $meeting
-      ];
+        ];
       return response()->json($response, 200);
+
+      };
+
+        $response = [
+          'msg' => 'Meeting not found'
+        ];
+        return response()->json($response, 404);
     }
 
     /**
